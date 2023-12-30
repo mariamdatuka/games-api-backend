@@ -1,19 +1,8 @@
-using System.Collections;
 using GameStore.api.Entities;
 
 namespace GameStore.api.Repositories;
 
-public interface IInMemGamesRepository
-{
-    void Create(Game game);
-    void Delete(int id);
-    Game? Get(int id);
-    IEnumerable<Game> GetAll();
-
-    void Update(Game game);
-}
-
-public class InMemGamesRepository
+public class InMemGamesRepository : IGamesRepository
 {
     private readonly List<Game> games = new()
 {
