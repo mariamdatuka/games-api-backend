@@ -1,3 +1,4 @@
+using GameStore.api.Dtos;
 using GameStore.api.Entities;
 using GameStore.api.Repositories;
 
@@ -11,20 +12,29 @@ public static class GamesEndpoints
     {
         InMemGamesRepository repository = new();
         var group = routes.MapGroup("/games").WithParameterValidation();
-        group.MapGet("/", (IGamesRepository repository) => repository.GetAll());
+        group.MapGet("/", (IGamesRepository repository) => repository.GetAll().Select(game => game.AsDto()));
         group.MapGet("/{id}", (IGamesRepository repository, int id) =>
         {
             Game? game = repository.Get(id);
-            return game is not null ? Results.Ok(game) : Results.NotFound();
+            return game is not null ? Results.Ok(game.AsDto()) : Results.NotFound();
         }).WithName(GetGameEndpointName);
 
-        group.MapPost("/", (IGamesRepository repository, Game game) =>
+        group.MapPost("/", (IGamesRepository repository, CreateGameDto gameDto) =>
         {
+            Game game = new()
+            {
+                Name = gameDto.Name,
+                Genre = gameDto.Genre,
+                Price = gameDto.Price,
+                ReleaseDate = gameDto.ReleaseDate,
+                ImageUri = gameDto.ImageUri
+
+            };
             repository.Create(game);
             return Results.CreatedAtRoute(GetGameEndpointName, new { id = game.Id }, game);
         });
 
-        group.MapPut("/{id}", (IGamesRepository repository, int id, Game updatedGame) =>
+        group.MapPut("/{id}", (IGamesRepository repository, int id, UpdateGameDto updatedGame) =>
         {
             Game? existingGame = repository.Get(id);
             if (existingGame is null)
